@@ -4,8 +4,8 @@ interface DeviceCardProps {
   device: DeviceData;
 }
 
-function getStatusFromTemp(temp: number) {
-  if (temp >= 50) {
+function getStatusFromTemp(temp: string) {
+  if (temp === 'H') {
     return {
       bg: 'bg-red-100 dark:bg-red-900/30',
       text: 'text-red-700 dark:text-red-400',
@@ -14,7 +14,7 @@ function getStatusFromTemp(temp: number) {
       label: 'Critical',
     };
   }
-  if (temp >= 40) {
+  if (temp === 'L') {
     return {
       bg: 'bg-yellow-100 dark:bg-yellow-900/30',
       text: 'text-yellow-700 dark:text-yellow-400',
@@ -32,14 +32,14 @@ function getStatusFromTemp(temp: number) {
   };
 }
 
-function getTempColor(temp: number) {
-  if (temp >= 50) return 'text-red-600 dark:text-red-400';
-  if (temp >= 40) return 'text-yellow-600 dark:text-yellow-400';
+function getTempColor(temp: string) {
+  if (temp === 'H') return 'text-red-600 dark:text-red-400';
+  if (temp === 'L') return 'text-yellow-600 dark:text-yellow-400';
   return 'text-green-600 dark:text-green-400';
 }
 
 export default function DeviceCard({ device }: DeviceCardProps) {
-  const statusStyle = getStatusFromTemp(device.tempValue);
+  const statusStyle = getStatusFromTemp(device.status);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg border border-gray-200 dark:border-gray-700 p-5 transition-all duration-300">
@@ -63,7 +63,7 @@ export default function DeviceCard({ device }: DeviceCardProps) {
 
       {/* Temperature */}
       <div className="text-center py-4">
-        <div className={`text-4xl font-bold ${getTempColor(device.tempValue)} transition-colors duration-300`}>
+        <div className={`text-4xl font-bold ${getTempColor(device.status)} transition-colors duration-300`}>
           {device.tempValue.toFixed(2)}
           <span className="text-lg ml-1">°C</span>
         </div>

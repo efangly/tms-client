@@ -1,8 +1,8 @@
 interface Device {
   id: string;
-  ip: string;
-  devicename: string;
-  probe: number;
+  machineIp: string;
+  machineName: string;
+  probeNo: number;
 }
 
 interface DeviceSelectorProps {
@@ -63,21 +63,24 @@ export default function DeviceSelector({
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {devices.map((device) => (
               <tr
-                key={device.id}
+                key={device.machineName}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                onClick={() => onToggleDevice(device.id)}
+                onClick={() => onToggleDevice(device.machineName)}
               >
                 <td className="px-2 py-2">
                   <input
                     type="checkbox"
-                    checked={selectedDevices.has(device.id)}
-                    onChange={() => onToggleDevice(device.id)}
+                    checked={selectedDevices.has(device.machineName)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onToggleDevice(device.machineName);
+                    }}
                     className="rounded"
                   />
                 </td>
-                <td className="px-2 py-2 text-gray-700 dark:text-gray-300">{device.ip}</td>
-                <td className="px-2 py-2 text-center text-gray-700 dark:text-gray-300">{device.probe}</td>
-                <td className="px-2 py-2 text-gray-700 dark:text-gray-300">{device.devicename}</td>
+                <td className="px-2 py-2 text-gray-700 dark:text-gray-300">{device.machineIp}</td>
+                <td className="px-2 py-2 text-center text-gray-700 dark:text-gray-300">{device.probeNo}</td>
+                <td className="px-2 py-2 text-gray-700 dark:text-gray-300">{device.machineName}</td>
               </tr>
             ))}
           </tbody>
@@ -91,25 +94,25 @@ export default function DeviceSelector({
     <div className="space-y-2 max-h-96 overflow-y-auto">
       {devices.map((device) => (
         <label
-          key={device.id}
+          key={device.machineName}
           className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
-            selectedDevices.has(device.id)
+            selectedDevices.has(device.machineName)
               ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
               : 'bg-gray-50 dark:bg-gray-700 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-600'
           }`}
         >
           <input
             type="checkbox"
-            checked={selectedDevices.has(device.id)}
-            onChange={() => onToggleDevice(device.id)}
+            checked={selectedDevices.has(device.machineName)}
+            onChange={() => onToggleDevice(device.machineName)}
             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <div className="ml-3 flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {device.devicename}
+              {device.machineName}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              {device.ip} • Probe {device.probe}
+              {device.machineIp} • Probe {device.probeNo}
             </p>
           </div>
         </label>

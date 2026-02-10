@@ -3,9 +3,9 @@ import api from '../lib/api';
 
 export interface Device {
   id: string;
-  ip: string;
-  devicename: string;
-  probe: number;
+  machineIp: string;
+  machineName: string;
+  probeNo: number;
 }
 
 export interface TempLogItem {
@@ -43,7 +43,7 @@ export function useTempLogData() {
           const deviceList = Array.isArray(result) ? result : (result.data || result.devices || []);
           setDevices(deviceList);
           // Select all devices by default
-          setSelectedDevices(new Set(deviceList.map((d: Device) => String(d.id))));
+          setSelectedDevices(new Set(deviceList.map((d: Device) => String(d.machineName))));
         }
       } catch (err) {
         console.error('Error fetching devices:', err);
@@ -72,7 +72,7 @@ export function useTempLogData() {
     if (selectedDevices.size === devices.length) {
       setSelectedDevices(new Set());
     } else {
-      setSelectedDevices(new Set(devices.map((d) => d.id)));
+      setSelectedDevices(new Set(devices.map((d) => String(d.machineName))));
     }
   }, [selectedDevices.size, devices]);
 
