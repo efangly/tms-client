@@ -53,9 +53,8 @@ export function useDeviceSSE() {
                 try {
                   const payload = JSON.parse(line.slice(6));
                   // Handle both formats: direct array or nested in 'payload' property
-                  if (Array.isArray(payload)) {
-                    console.log('Received payload:', payload);
-                    setDevices(payload);
+                  if (Array.isArray(payload.data)) {
+                    setDevices(payload.data);
                   } else if (payload && Array.isArray(payload.payload)) {
                     setDevices(payload.payload);
                   }

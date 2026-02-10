@@ -1,7 +1,17 @@
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { MdDashboard } from 'react-icons/md';
+import { FaChartLine, FaFileAlt } from 'react-icons/fa';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+
+  const navItems = [
+    { href: '/', label: 'Dashboard', icon: <MdDashboard className="text-lg" /> },
+    { href: '/chart', label: 'กราฟ', icon: <FaChartLine className="text-lg" /> },
+    { href: '/report', label: 'รายงาน', icon: <FaFileAlt className="text-lg" /> },
+  ];
 
   return (
     <nav className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
@@ -19,15 +29,24 @@ export default function Navbar() {
             </h1>
           </div>
 
-          {/* Right side */}
+          {/* Navigation + Right side */}
           <div className="flex items-center gap-4">
-            {/* Connection status */}
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-              </span>
-              Live
+            {/* Nav links */}
+            <div className="flex items-center gap-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm ${
+                    location.pathname === item.href
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {item.icon}
+                  {item.label}
+                </Link>
+              ))}
             </div>
 
             {/* Theme Toggle */}
