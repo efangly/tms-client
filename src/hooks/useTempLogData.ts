@@ -6,15 +6,16 @@ export interface Device {
   machineIp: string;
   machineName: string;
   probeNo: number;
+  mcuId: string;
 }
 
 export interface TempLogItem {
-  id: number;
   machineIp: string;
   probeNo: number;
-  deviceName: string;
+  machineName: string;
   tempValue: number;
   insertTime: string;
+  mcuId: string;
 }
 
 export interface ChartSeries {

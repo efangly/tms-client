@@ -6,6 +6,7 @@ import {
   View,
   StyleSheet,
   Font,
+  Image,
 } from '@react-pdf/renderer';
 import { formatDate, formatDateTime } from '../lib/date-format';
 
@@ -41,19 +42,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  logoPlaceholder: {
+  logo: {
     width: 60,
     height: 60,
-    marginRight: 20,
-    borderRadius: 30,
-    backgroundColor: '#4a9d4a',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  logoText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
+    marginRight: 10,
   },
   headerTextContainer: {
     alignItems: 'center',
@@ -138,12 +130,12 @@ const styles = StyleSheet.create({
 });
 
 export interface TempLogData {
-  id: number;
   machineIp: string;
   probeNo: number;
-  deviceName: string;
+  machineName: string;
   tempValue: number;
   insertTime: string;
+  mcuId: string;
 }
 
 interface TempLogReportProps {
@@ -175,9 +167,10 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
         <Page key={pageIndex} size="A4" style={styles.page}>
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoText}>TMS</Text>
-            </View>
+            <Image
+              src="/logo.png"
+              style={styles.logo}
+            />
             <View style={styles.headerTextContainer}>
               <Text style={styles.title}>รายงานการบันทึกค่าอุณหภูมิ</Text>
               <Text style={styles.dateRange}>
@@ -210,7 +203,7 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
             {/* Table Body */}
             {pageData.map((row, index) => (
               <View
-                key={row.id}
+                key={index}
                 style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : {}]}
               >
                 <View style={styles.tableColIp}>
@@ -220,7 +213,7 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
                   <Text style={styles.tableCellText}>{row.probeNo}</Text>
                 </View>
                 <View style={styles.tableColName}>
-                  <Text style={styles.tableCellText}>{row.deviceName}</Text>
+                  <Text style={styles.tableCellText}>{row.mcuId}</Text>
                 </View>
                 <View style={styles.tableColTemp}>
                   <Text style={styles.tableCellText}>
