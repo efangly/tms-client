@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import axios from 'axios';
 import type { DeviceData } from '../types/device';
 
-const SSE_URL = import.meta.env.VITE_SSE_URL || 'http://localhost:3000/api/devices/stream';
+const SSE_URL = import.meta.env.VITE_SSE_URL || 'http://localhost:8080/api/temperature-stream';
 
 export function useDeviceSSE() {
   const [devices, setDevices] = useState<DeviceData[]>([]);
@@ -52,10 +52,11 @@ export function useDeviceSSE() {
               if (line.startsWith('data: ')) {
                 try {
                   const payload = JSON.parse(line.slice(6));
-                  // Handle both formats: direct array or nested in 'payload' property
-                  if (Array.isArray(payload.data)) {
+                  if (Array.isArray(payload)) {
+                    setDevices(payload);
+                  } else if (Array.isArray(payload.data)) {
                     setDevices(payload.data);
-                  } else if (payload && Array.isArray(payload.payload)) {
+                  } else if (Array.isArray(payload.payload)) {
                     setDevices(payload.payload);
                   }
                 } catch {

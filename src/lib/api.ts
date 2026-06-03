@@ -29,8 +29,11 @@ export const api = {
     },
     report: (params: { startDate: string; endDate: string; devices?: string }) => {
       let path = '/api/reports/templog';
-      const queryParams = [`startDate=${params.startDate}`, `endDate=${params.endDate}`];
-      if (params.devices) queryParams.push(`devices=${params.devices}`);
+      const queryParams = [
+        `startDate=${encodeURIComponent(params.startDate)}`,
+        `endDate=${encodeURIComponent(params.endDate)}`,
+      ];
+      if (params.devices) queryParams.push(`devices=${encodeURIComponent(params.devices)}`);
       path += `?${queryParams.join('&')}`;
       return getApiUrl(path);
     },

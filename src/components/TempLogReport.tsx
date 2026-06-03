@@ -168,7 +168,7 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
           {/* Header */}
           <View style={styles.header}>
             <Image
-              src="/logo.png"
+              src={typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : '/logo.png'}
               style={styles.logo}
             />
             <View style={styles.headerTextContainer}>
@@ -213,7 +213,7 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
                   <Text style={styles.tableCellText}>{row.probeNo}</Text>
                 </View>
                 <View style={styles.tableColName}>
-                  <Text style={styles.tableCellText}>{row.mcuId}</Text>
+                  <Text style={styles.tableCellText}>{row.machineName}</Text>
                 </View>
                 <View style={styles.tableColTemp}>
                   <Text style={styles.tableCellText}>

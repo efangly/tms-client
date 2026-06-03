@@ -87,6 +87,11 @@ export function useTempLogData() {
       return false;
     }
 
+    if (endDate < startDate) {
+      setError('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มต้น');
+      return false;
+    }
+
     if (selectedDevices.size === 0) {
       setError('กรุณาเลือกอุปกรณ์อย่างน้อย 1 รายการ');
       return false;

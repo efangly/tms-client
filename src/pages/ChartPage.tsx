@@ -109,7 +109,7 @@ export default function ChartPage() {
           display: true,
           text: 'Temperature (°C)',
         },
-        beginAtZero: true,
+        beginAtZero: false,
       },
     },
   };
