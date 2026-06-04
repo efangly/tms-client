@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import Swal from 'sweetalert2';
 import { api, fetchApi } from '../lib/api';
 import type { DeviceData, DeviceDetail } from '../types/device';
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+});
 
 interface DeviceEditModalProps {
   device: DeviceData | null;
@@ -39,7 +48,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
     fetchApi<DeviceDetail>(api.devices.get(device.ipAddress, device.probeNo))
       .then((detail) => {
         setMachineName(detail.machineName ?? device.machineName);
-        setIp(detail.ip);
+        setIp(detail.machineIp ?? device.ipAddress ?? '');
         setMinTemp(String(detail.minTemp));
         setMaxTemp(String(detail.maxTemp));
         setTimeout(() => inputRef.current?.focus(), 50);
@@ -70,8 +79,11 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
       });
       onSaved(updated);
       onClose();
+      Toast.fire({ icon: 'success', title: 'Device saved successfully' });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save changes');
+      const msg = err instanceof Error ? err.message : 'Failed to save changes';
+      setError(msg);
+      Toast.fire({ icon: 'error', title: msg });
     } finally {
       setSaving(false);
     }

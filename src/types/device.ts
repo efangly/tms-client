@@ -5,11 +5,12 @@ export interface DeviceData {
   timestamp: string;
   ipAddress?: string;
   probeNo?: number | string;
+  type?: string;
 }
 
 export interface DeviceDetail {
   machineName: string;
-  ip: string;
+  machineIp: string;
   probeNo?: number | string;
   minTemp: number;
   maxTemp: number;
