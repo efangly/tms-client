@@ -2,6 +2,7 @@ import type { DeviceData } from '../types/device';
 
 interface DeviceCardProps {
   device: DeviceData;
+  onEdit?: (device: DeviceData) => void;
 }
 
 function getStatusFromTemp(temp: string) {
@@ -38,7 +39,7 @@ function getTempColor(temp: string) {
   return 'text-green-600 dark:text-green-400';
 }
 
-export default function DeviceCard({ device }: DeviceCardProps) {
+export default function DeviceCard({ device, onEdit }: DeviceCardProps) {
   const statusStyle = getStatusFromTemp(device.status);
 
   return (
@@ -55,10 +56,23 @@ export default function DeviceCard({ device }: DeviceCardProps) {
             <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{device.machineName}</h3>
           </div>
         </div>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset ${statusStyle.bg} ${statusStyle.text} ${statusStyle.ring}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
-          {statusStyle.label}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ring-1 ring-inset ${statusStyle.bg} ${statusStyle.text} ${statusStyle.ring}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
+            {statusStyle.label}
+          </span>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(device)}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/30 transition-colors duration-200"
+              title="Edit device"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.172-8.172z" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Temperature */}

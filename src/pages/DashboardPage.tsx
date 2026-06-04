@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import DeviceCard from '../components/DeviceCard';
+import DeviceEditModal from '../components/DeviceEditModal';
 import { useDeviceSSE } from '../hooks/useDeviceSSE';
+import type { DeviceData } from '../types/device';
 
 export default function DashboardPage() {
   const { devices, isConnected, error, reconnect } = useDeviceSSE();
+  const [editingDevice, setEditingDevice] = useState<DeviceData | null>(null);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -67,7 +71,11 @@ export default function DashboardPage() {
           {devices
             .sort((a, b) => a.machineName.localeCompare(b.machineName))
             .map((device) => (
-              <DeviceCard key={device.machineName} device={device} />
+              <DeviceCard
+                key={device.machineName}
+                device={device}
+                onEdit={setEditingDevice}
+              />
             ))}
         </div>
       ) : (
@@ -89,6 +97,12 @@ export default function DashboardPage() {
           <p className="text-sm mt-1">Connecting to SSE stream</p>
         </div>
       )}
+
+      <DeviceEditModal
+        device={editingDevice}
+        onClose={() => setEditingDevice(null)}
+        onSaved={() => setEditingDevice(null)}
+      />
     </main>
   );
 }

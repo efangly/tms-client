@@ -10,9 +10,15 @@ export const api = {
   // Device endpoints
   devices: {
     list: () => getApiUrl('/api/devices'),
-    get: (id: string | number) => getApiUrl(`/api/devices/${id}`),
+    get: (ip: string, probeNo?: number | string) => {
+      const url = getApiUrl(`/api/devices/${ip}`);
+      return probeNo !== undefined ? `${url}?probeNo=${probeNo}` : url;
+    },
     create: () => getApiUrl('/api/devices'),
-    update: (id: string | number) => getApiUrl(`/api/devices/${id}`),
+    update: (ip: string, probeNo?: number | string) => {
+      const url = getApiUrl(`/api/devices/${ip}`);
+      return probeNo !== undefined ? `${url}?probeNo=${probeNo}` : url;
+    },
     delete: (id: string | number) => getApiUrl(`/api/devices/${id}`),
   },
 
