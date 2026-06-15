@@ -6,6 +6,7 @@ export interface DeviceData {
   ipAddress?: string;
   probeNo?: number | string;
   type?: string;
+  adjTemp?: number;
 }
 
 export interface DeviceDetail {
@@ -14,4 +15,5 @@ export interface DeviceDetail {
   probeNo?: number | string;
   minTemp: number;
   maxTemp: number;
+  adjTemp?: number;
 }

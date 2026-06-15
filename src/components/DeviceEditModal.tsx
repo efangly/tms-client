@@ -24,6 +24,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
   const [machineName, setMachineName] = useState('');
   const [minTemp, setMinTemp] = useState('');
   const [maxTemp, setMaxTemp] = useState('');
+  const [adjTemp, setAdjTemp] = useState('');
   const [ip, setIp] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -36,6 +37,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
     setMachineName(device.machineName);
     setMinTemp('');
     setMaxTemp('');
+    setAdjTemp('');
     setIp(device.ipAddress ?? '');
     setError(null);
 
@@ -51,6 +53,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
         setIp(detail.machineIp ?? device.ipAddress ?? '');
         setMinTemp(String(detail.minTemp));
         setMaxTemp(String(detail.maxTemp));
+        setAdjTemp(detail.adjTemp != null ? String(detail.adjTemp) : '');
         setTimeout(() => inputRef.current?.focus(), 50);
       })
       .catch((err) => {
@@ -72,6 +75,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
       const body: Record<string, unknown> = { machineName: name };
       if (minTemp !== '') body.minTemp = parseFloat(minTemp);
       if (maxTemp !== '') body.maxTemp = parseFloat(maxTemp);
+      if (adjTemp !== '') body.adjTemp = parseFloat(adjTemp);
 
       const updated = await fetchApi<DeviceData>(api.devices.update(ip, device!.probeNo), {
         method: 'PUT',
@@ -190,6 +194,21 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
                       className={inputClass}
                     />
                   </div>
+                </div>
+
+                {/* Adj Temp */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    Adj Temp (°C)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={adjTemp}
+                    onChange={(e) => setAdjTemp(e.target.value)}
+                    placeholder="e.g. 0"
+                    className={inputClass}
+                  />
                 </div>
 
                 {/* Read-only live data */}

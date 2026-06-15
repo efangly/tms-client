@@ -65,17 +65,42 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Device Cards Grid */}
+      {/* Device Cards grouped by IP */}
       {devices.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {devices
-            .sort((a, b) => a.machineName.localeCompare(b.machineName))
-            .map((device) => (
-              <DeviceCard
-                key={device.machineName}
-                device={device}
-                onEdit={setEditingDevice}
-              />
+        <div className="space-y-8">
+          {Array.from(
+            devices.reduce((map, d) => {
+              const ip = d.ipAddress ?? 'Unknown';
+              if (!map.has(ip)) map.set(ip, []);
+              map.get(ip)!.push(d);
+              return map;
+            }, new Map<string, typeof devices>())
+          )
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([ip, group]) => (
+              <div key={ip}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600">
+                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                    <span className="text-xs font-mono font-semibold text-gray-600 dark:text-gray-300">{ip}</span>
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{group.length} probe{group.length !== 1 ? 's' : ''}</span>
+                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {group
+                    .sort((a, b) => a.machineName.localeCompare(b.machineName))
+                    .map((device) => (
+                      <DeviceCard
+                        key={`${device.ipAddress}-${device.probeNo}`}
+                        device={device}
+                        onEdit={setEditingDevice}
+                      />
+                    ))}
+                </div>
+              </div>
             ))}
         </div>
       ) : (
