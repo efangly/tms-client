@@ -22,6 +22,14 @@ export const api = {
     delete: (id: string | number) => getApiUrl(`/api/devices/${id}`),
   },
 
+  // Schedule report endpoints
+  machines: {
+    schedule: (ip: string, probeNo: number | string) =>
+      getApiUrl(`/api/machines/${ip}/${probeNo}/schedule`),
+    scheduleTime: (ip: string, probeNo: number | string, time: string) =>
+      getApiUrl(`/api/machines/${ip}/${probeNo}/schedule/${time}`),
+  },
+
   // Temperature logs
   tempLogs: {
     list: (params?: { startDate?: string; endDate?: string; limit?: number }) => {

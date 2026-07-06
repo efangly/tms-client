@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import { api, fetchApi } from '../lib/api';
-import type { DeviceData, DeviceDetail } from '../types/device';
+import type { DeviceData, DeviceDetail, ScheduleResponse } from '../types/device';
 
 const Toast = Swal.mixin({
   toast: true,
@@ -20,15 +20,25 @@ interface DeviceEditModalProps {
 const inputClass =
   'w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
 
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTE_OPTIONS = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
 export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEditModalProps) {
   const [machineName, setMachineName] = useState('');
   const [minTemp, setMinTemp] = useState('');
   const [maxTemp, setMaxTemp] = useState('');
   const [adjTemp, setAdjTemp] = useState('');
+  const [chkReport, setChkReport] = useState(false);
+  const [chkMon, setChkMon] = useState(false);
   const [ip, setIp] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scheduleTimes, setScheduleTimes] = useState<string[]>([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [newHour, setNewHour] = useState('08');
+  const [newMinute, setNewMinute] = useState('00');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -38,6 +48,8 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
     setMinTemp('');
     setMaxTemp('');
     setAdjTemp('');
+    setChkReport(false);
+    setChkMon(false);
     setIp(device.ipAddress ?? '');
     setError(null);
 
@@ -54,6 +66,8 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
         setMinTemp(String(detail.minTemp));
         setMaxTemp(String(detail.maxTemp));
         setAdjTemp(detail.adjTemp != null ? String(detail.adjTemp) : '');
+        setChkReport(detail.chkReport === '1');
+        setChkMon(detail.chkMon === '1');
         setTimeout(() => inputRef.current?.focus(), 50);
       })
       .catch((err) => {
@@ -62,7 +76,62 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
       .finally(() => setLoading(false));
   }, [device]);
 
+  useEffect(() => {
+    setNewHour('08');
+    setNewMinute('00');
+    if (!device?.ipAddress || device.probeNo === undefined) {
+      setScheduleTimes([]);
+      return;
+    }
+
+    setScheduleLoading(true);
+    fetchApi<ScheduleResponse>(api.machines.schedule(device.ipAddress, device.probeNo))
+      .then((res) => setScheduleTimes(res.times ?? []))
+      .catch(() => setScheduleTimes([]))
+      .finally(() => setScheduleLoading(false));
+  }, [device?.ipAddress, device?.probeNo]);
+
   if (!device) return null;
+
+  const isHumidity = device.type === 'H';
+  const unit = isHumidity ? '%' : '°C';
+
+  async function handleAddSchedule() {
+    if (!device?.ipAddress || device.probeNo === undefined) return;
+    const time = `${newHour}${newMinute}`;
+
+    setScheduleSaving(true);
+    try {
+      const res = await fetchApi<ScheduleResponse>(
+        api.machines.scheduleTime(device.ipAddress, device.probeNo, time),
+        { method: 'POST' }
+      );
+      setScheduleTimes(res.times ?? []);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to add schedule time';
+      Toast.fire({ icon: 'error', title: msg });
+    } finally {
+      setScheduleSaving(false);
+    }
+  }
+
+  async function handleDeleteSchedule(time: string) {
+    if (!device?.ipAddress || device.probeNo === undefined) return;
+
+    setScheduleSaving(true);
+    try {
+      const res = await fetchApi<ScheduleResponse>(
+        api.machines.scheduleTime(device.ipAddress, device.probeNo, time),
+        { method: 'DELETE' }
+      );
+      setScheduleTimes(res.times ?? []);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to remove schedule time';
+      Toast.fire({ icon: 'error', title: msg });
+    } finally {
+      setScheduleSaving(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +145,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
       if (minTemp !== '') body.minTemp = parseFloat(minTemp);
       if (maxTemp !== '') body.maxTemp = parseFloat(maxTemp);
       if (adjTemp !== '') body.adjTemp = parseFloat(adjTemp);
+      if (ip) body.chkReport = chkReport ? '1' : '0';
 
       const updated = await fetchApi<DeviceData>(api.devices.update(ip, device!.probeNo), {
         method: 'PUT',
@@ -170,7 +240,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Min Temp (°C)
+                      Min {isHumidity ? 'Humidity' : 'Temp'} ({unit})
                     </label>
                     <input
                       type="number"
@@ -183,7 +253,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                      Max Temp (°C)
+                      Max {isHumidity ? 'Humidity' : 'Temp'} ({unit})
                     </label>
                     <input
                       type="number"
@@ -199,7 +269,7 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
                 {/* Adj Temp */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                    Adj Temp (°C)
+                    Adj {isHumidity ? 'Humidity' : 'Temp'} ({unit})
                   </label>
                   <input
                     type="number"
@@ -211,12 +281,131 @@ export default function DeviceEditModal({ device, onClose, onSaved }: DeviceEdit
                   />
                 </div>
 
+                {/* Repeat Alert (chkReport / chkMon) */}
+                {ip && (
+                  <div className="pt-1 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">แจ้งเตือนต่อเนื่อง</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                          ส่ง alert ซ้ำทุกรอบตรวจจนกว่าค่าจะกลับเข้าช่วงปกติ
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={chkReport}
+                        aria-label="Toggle repeat alert"
+                        onClick={() => setChkReport((v) => !v)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                          chkReport ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            chkReport ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {chkMon && (
+                      <div className="mt-2 flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                        <p className="text-xs text-red-700 dark:text-red-400">
+                          อยู่ระหว่างแจ้งเตือนต่อเนื่อง จะหยุดอัตโนมัติเมื่อค่ากลับเข้าช่วงปกติ
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Schedule Report Times */}
+                {ip && (
+                  <div className="pt-1 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Schedule Report Times
+                      </label>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{scheduleTimes.length}/6</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {scheduleLoading ? (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Loading...</p>
+                      ) : scheduleTimes.length === 0 ? (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">No schedule set</p>
+                      ) : (
+                        scheduleTimes.map((t) => (
+                          <span
+                            key={t}
+                            className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full border border-blue-200 dark:border-blue-800"
+                          >
+                            {t.slice(0, 2)}:{t.slice(2)}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSchedule(t)}
+                              disabled={scheduleSaving}
+                              aria-label={`Remove ${t}`}
+                              className="p-0.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors disabled:opacity-50"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <select
+                        value={newHour}
+                        onChange={(e) => setNewHour(e.target.value)}
+                        disabled={scheduleSaving || scheduleTimes.length >= 6}
+                        className={inputClass}
+                      >
+                        {HOUR_OPTIONS.map((h) => (
+                          <option key={h} value={h}>
+                            {h}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        value={newMinute}
+                        onChange={(e) => setNewMinute(e.target.value)}
+                        disabled={scheduleSaving || scheduleTimes.length >= 6}
+                        className={inputClass}
+                      >
+                        {MINUTE_OPTIONS.map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={handleAddSchedule}
+                        disabled={scheduleSaving || scheduleTimes.length >= 6}
+                        className="shrink-0 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {scheduleTimes.length >= 6 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">Maximum 6 schedule times</p>
+                    )}
+                  </div>
+                )}
+
                 {/* Read-only live data */}
                 <div className="grid grid-cols-2 gap-3 pt-1 border-t border-gray-100 dark:border-gray-700">
                   <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Current Temp</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                      Current {isHumidity ? 'Humidity' : 'Temp'}
+                    </p>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {device.tempValue.toFixed(2)} °C
+                      {device.tempValue.toFixed(2)} {unit}
                     </p>
                   </div>
                   <div>

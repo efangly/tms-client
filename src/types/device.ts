@@ -16,4 +16,10 @@ export interface DeviceDetail {
   minTemp: number;
   maxTemp: number;
   adjTemp?: number;
+  chkReport?: string;
+  chkMon?: string;
+}
+
+export interface ScheduleResponse {
+  times: string[] | null;
 }
