@@ -32,25 +32,40 @@ export const api = {
 
   // Temperature logs
   tempLogs: {
-    list: (params?: { startDate?: string; endDate?: string; limit?: number }) => {
+    list: (params?: { startDate?: string; endDate?: string; limit?: number; includeArchive?: boolean }) => {
       let path = '/api/temp-logs';
       const queryParams: string[] = [];
       if (params?.startDate) queryParams.push(`startDate=${params.startDate}`);
       if (params?.endDate) queryParams.push(`endDate=${params.endDate}`);
       if (params?.limit) queryParams.push(`limit=${params.limit}`);
+      if (params?.includeArchive) queryParams.push('includeArchive=true');
       if (queryParams.length > 0) path += `?${queryParams.join('&')}`;
       return getApiUrl(path);
     },
-    report: (params: { startDate: string; endDate: string; devices?: string }) => {
+    report: (params: { startDate: string; endDate: string; devices?: string; includeArchive?: boolean }) => {
       let path = '/api/reports/templog';
       const queryParams = [
         `startDate=${encodeURIComponent(params.startDate)}`,
         `endDate=${encodeURIComponent(params.endDate)}`,
       ];
       if (params.devices) queryParams.push(`devices=${encodeURIComponent(params.devices)}`);
+      if (params.includeArchive) queryParams.push('includeArchive=true');
       path += `?${queryParams.join('&')}`;
       return getApiUrl(path);
     },
+  },
+
+  // Archive management
+  archive: {
+    run: () => getApiUrl('/api/archive/run'),
+    list: (params: { startDate: string; endDate: string }) =>
+      getApiUrl(
+        `/api/archive?startDate=${encodeURIComponent(params.startDate)}&endDate=${encodeURIComponent(params.endDate)}`
+      ),
+    restore: (params: { startDate: string; endDate: string }) =>
+      getApiUrl(
+        `/api/archive/restore?startDate=${encodeURIComponent(params.startDate)}&endDate=${encodeURIComponent(params.endDate)}`
+      ),
   },
 
   // SSE stream

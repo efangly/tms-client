@@ -5,6 +5,8 @@ interface Device {
   probeNo: number;
 }
 
+const deviceKey = (d: Device) => `${d.machineIp}:${d.probeNo}`;
+
 interface DeviceSelectorProps {
   devices: Device[];
   selectedDevices: Set<string>;
@@ -63,17 +65,17 @@ export default function DeviceSelector({
           <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {devices.map((device) => (
               <tr
-                key={device.machineName}
+                key={deviceKey(device)}
                 className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                onClick={() => onToggleDevice(device.machineName)}
+                onClick={() => onToggleDevice(deviceKey(device))}
               >
                 <td className="px-2 py-2">
                   <input
                     type="checkbox"
-                    checked={selectedDevices.has(device.machineName)}
+                    checked={selectedDevices.has(deviceKey(device))}
                     onChange={(e) => {
                       e.stopPropagation();
-                      onToggleDevice(device.machineName);
+                      onToggleDevice(deviceKey(device));
                     }}
                     className="rounded"
                   />
@@ -94,17 +96,17 @@ export default function DeviceSelector({
     <div className="space-y-2 max-h-96 overflow-y-auto">
       {devices.map((device) => (
         <label
-          key={device.machineName}
+          key={deviceKey(device)}
           className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors ${
-            selectedDevices.has(device.machineName)
+            selectedDevices.has(deviceKey(device))
               ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700'
               : 'bg-gray-50 dark:bg-gray-700 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-600'
           }`}
         >
           <input
             type="checkbox"
-            checked={selectedDevices.has(device.machineName)}
-            onChange={() => onToggleDevice(device.machineName)}
+            checked={selectedDevices.has(deviceKey(device))}
+            onChange={() => onToggleDevice(deviceKey(device))}
             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <div className="ml-3 flex-1 min-w-0">

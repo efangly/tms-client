@@ -55,6 +55,8 @@ export default function ChartPage() {
     toggleAllDevices,
     allSelected,
     isLoadingDevices,
+    includeArchive,
+    setIncludeArchive,
     series,
     isLoading,
     error,
@@ -162,6 +164,17 @@ export default function ChartPage() {
                 />
               </div>
             </div>
+
+            {/* Include Archived Data */}
+            <label className="flex items-center gap-2 mt-3 text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeArchive}
+                onChange={(e) => setIncludeArchive(e.target.checked)}
+                className="rounded"
+              />
+              รวมข้อมูลที่จัดเก็บถาวร
+            </label>
 
             {/* Show Data Button */}
             <button

@@ -25,6 +25,8 @@ export default function ReportPage() {
     toggleAllDevices,
     allSelected,
     isLoadingDevices,
+    includeArchive,
+    setIncludeArchive,
     data,
     isLoading,
     error,
@@ -110,6 +112,15 @@ export default function ReportPage() {
                   className="border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
+              <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer pb-2">
+                <input
+                  type="checkbox"
+                  checked={includeArchive}
+                  onChange={(e) => setIncludeArchive(e.target.checked)}
+                  className="rounded"
+                />
+                รวมข้อมูลที่จัดเก็บถาวร
+              </label>
               <button
                 onClick={handleFetchReport}
                 disabled={isLoading || !startDate || !endDate || selectedDevices.size === 0}

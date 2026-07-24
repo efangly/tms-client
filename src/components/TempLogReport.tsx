@@ -9,6 +9,7 @@ import {
   Image,
 } from '@react-pdf/renderer';
 import { formatDate, formatDateTime } from '../lib/date-format';
+import type { TempLogItem } from '../hooks/useTempLogData';
 
 // Register Thai font
 Font.register({
@@ -129,17 +130,8 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface TempLogData {
-  machineIp: string;
-  probeNo: number;
-  machineName: string;
-  tempValue: number;
-  insertTime: string;
-  mcuId: string;
-}
-
 interface TempLogReportProps {
-  data: TempLogData[];
+  data: TempLogItem[];
   startDate: string;
   endDate: string;
 }
@@ -151,7 +143,7 @@ const TempLogReport: React.FC<TempLogReportProps> = ({
 }) => {
   // Split data into pages (approximately 25 rows per page)
   const rowsPerPage = 25;
-  const pages: TempLogData[][] = [];
+  const pages: TempLogItem[][] = [];
   for (let i = 0; i < data.length; i += rowsPerPage) {
     pages.push(data.slice(i, i + rowsPerPage));
   }

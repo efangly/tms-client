@@ -23,11 +23,14 @@ export interface ChartSeries {
   data: { x: string; y: number }[];
 }
 
+const deviceKey = (d: Device) => `${d.machineIp}:${d.probeNo}`;
+
 export function useTempLogData() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
+  const [includeArchive, setIncludeArchive] = useState(false);
   const [data, setData] = useState<TempLogItem[]>([]);
   const [series, setSeries] = useState<ChartSeries[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +47,7 @@ export function useTempLogData() {
           const deviceList = Array.isArray(result) ? result : (result.data || result.devices || []);
           setDevices(deviceList);
           // Select all devices by default
-          setSelectedDevices(new Set(deviceList.map((d: Device) => String(d.machineName))));
+          setSelectedDevices(new Set(deviceList.map(deviceKey)));
         }
       } catch (err) {
         console.error('Error fetching devices:', err);
@@ -73,7 +76,7 @@ export function useTempLogData() {
     if (selectedDevices.size === devices.length) {
       setSelectedDevices(new Set());
     } else {
-      setSelectedDevices(new Set(devices.map((d) => String(d.machineName))));
+      setSelectedDevices(new Set(devices.map(deviceKey)));
     }
   }, [selectedDevices.size, devices]);
 
@@ -103,7 +106,7 @@ export function useTempLogData() {
     try {
       const deviceIds = Array.from(selectedDevices).join(',');
       const response = await fetch(
-        api.tempLogs.report({ startDate, endDate, devices: deviceIds })
+        api.tempLogs.report({ startDate, endDate, devices: deviceIds, includeArchive })
       );
 
       if (!response.ok) {
@@ -121,7 +124,7 @@ export function useTempLogData() {
     } finally {
       setIsLoading(false);
     }
-  }, [startDate, endDate, selectedDevices]);
+  }, [startDate, endDate, selectedDevices, includeArchive]);
 
   // Clear data
   const clearData = useCallback(() => {
@@ -141,6 +144,8 @@ export function useTempLogData() {
     toggleAllDevices,
     allSelected,
     isLoadingDevices,
+    includeArchive,
+    setIncludeArchive,
     data,
     series,
     isLoading,

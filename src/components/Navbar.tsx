@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { MdDashboard } from 'react-icons/md';
-import { FaChartLine, FaFileAlt } from 'react-icons/fa';
+import { FaChartLine, FaFileAlt, FaArchive } from 'react-icons/fa';
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -11,6 +11,7 @@ export default function Navbar() {
     { href: '/', label: 'Dashboard', icon: <MdDashboard className="text-lg" /> },
     { href: '/chart', label: 'กราฟ', icon: <FaChartLine className="text-lg" /> },
     { href: '/report', label: 'รายงาน', icon: <FaFileAlt className="text-lg" /> },
+    { href: '/archive', label: 'จัดเก็บถาวร', icon: <FaArchive className="text-lg" /> },
   ];
 
   return (
