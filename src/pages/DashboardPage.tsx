@@ -4,11 +4,12 @@ import DeviceEditModal from '../components/DeviceEditModal';
 import { useDeviceSSE } from '../hooks/useDeviceSSE';
 import type { DeviceData } from '../types/device';
 
-const CARD_W = 240;
-const CARD_H = 180;
-const CARD_GAP = 20;
-const GROUP_HEADER_H = 32;
-const GROUP_GAP = 16;
+const CARD_W = 260;
+const CARD_H = 120;
+const CARD_GAP = 14;
+const GROUP_HEADER_H = 34;
+const GROUP_GAP = 12;
+const MAX_FIT_DEVICES = 40;
 
 function useElementSize<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
@@ -53,6 +54,13 @@ function computeFitLayout(groupSizes: number[], availW: number, availH: number) 
   return best;
 }
 
+function capGroupSizes(groupSizes: number[], cap: number) {
+  const total = groupSizes.reduce((a, b) => a + b, 0);
+  if (total <= cap) return groupSizes;
+  const ratio = cap / total;
+  return groupSizes.map((n) => Math.max(1, Math.round(n * ratio)));
+}
+
 export default function DashboardPage() {
   const { devices, isConnected, error, reconnect } = useDeviceSSE();
   const [editingDevice, setEditingDevice] = useState<DeviceData | null>(null);
@@ -74,21 +82,26 @@ export default function DashboardPage() {
       }));
   }, [devices]);
 
+  const totalDevices = useMemo(
+    () => groups.reduce((sum, g) => sum + g.devices.length, 0),
+    [groups]
+  );
+  const isOverCap = totalDevices > MAX_FIT_DEVICES;
+
   const layout = useMemo(
-    () => computeFitLayout(groups.map((g) => g.devices.length), fitSize.width, fitSize.height),
+    () =>
+      computeFitLayout(
+        capGroupSizes(groups.map((g) => g.devices.length), MAX_FIT_DEVICES),
+        fitSize.width,
+        fitSize.height
+      ),
     [groups, fitSize.width, fitSize.height]
   );
 
   return (
-    <main className="h-full flex flex-col px-4 sm:px-6 lg:px-8 py-4 max-w-7xl mx-auto w-full">
+    <main className="h-full flex flex-col px-4 sm:px-6 lg:px-8 py-2 max-w-7xl mx-auto w-full">
       {/* Header */}
-      <div className="shrink-0 flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Device Dashboard</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Real-time temperature monitoring for IoT devices
-          </p>
-        </div>
+      <div className="shrink-0 flex items-center justify-end mb-2">
         <div className="flex items-center gap-3">
           <span
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
@@ -137,7 +150,12 @@ export default function DashboardPage() {
       )}
 
       {/* Device Cards grouped by IP, sized to fit available space */}
-      <div ref={fitRef} className="flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+      <div
+        ref={fitRef}
+        className={`flex-1 min-h-0 flex justify-center ${
+          isOverCap ? 'items-start overflow-y-auto' : 'items-center overflow-hidden'
+        }`}
+      >
         {devices.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: layout.scale * GROUP_GAP }}>
             {groups.map(({ ip, devices: group }) => (
@@ -148,19 +166,19 @@ export default function DashboardPage() {
                 >
                   <div
                     className="flex items-center rounded-lg bg-gray-100 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600"
-                    style={{ gap: layout.scale * 6, padding: `${layout.scale * 4}px ${layout.scale * 8}px` }}
+                    style={{ gap: layout.scale * 7, padding: `${layout.scale * 5}px ${layout.scale * 10}px` }}
                   >
-                    <svg style={{ width: layout.scale * 12, height: layout.scale * 12 }} className="text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg style={{ width: layout.scale * 15, height: layout.scale * 15 }} className="text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                     <span
-                      className="font-mono font-semibold text-gray-600 dark:text-gray-300"
-                      style={{ fontSize: layout.scale * 10 }}
+                      className="font-mono font-bold text-gray-700 dark:text-gray-200"
+                      style={{ fontSize: layout.scale * 12 }}
                     >
                       {ip}
                     </span>
                   </div>
-                  <span className="text-gray-400 dark:text-gray-500" style={{ fontSize: layout.scale * 10 }}>
+                  <span className="text-gray-400 dark:text-gray-500" style={{ fontSize: layout.scale * 12 }}>
                     {group.length} probe{group.length !== 1 ? 's' : ''}
                   </span>
                   <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
