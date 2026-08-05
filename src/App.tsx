@@ -7,14 +7,16 @@ import ArchivePage from './pages/ArchivePage';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="/chart" element={<ChartPage />} />
-        <Route path="/report" element={<ReportPage />} />
-        <Route path="/archive" element={<ArchivePage />} />
-      </Routes>
+      <div className="flex-1 min-h-0 overflow-auto">
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/chart" element={<ChartPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/archive" element={<ArchivePage />} />
+        </Routes>
+      </div>
     </div>
   );
 }
